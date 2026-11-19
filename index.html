@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bonniemath — QLD Year 11 Mathematical Methods Holiday Prep</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #e2e8f0;
+      --secondary-foreground: #1e293b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --chart-1: #2563eb;
+      --chart-2: #059669;
+      --chart-3: #d97706;
+      --chart-4: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0f172a;
+        --card: #1e293b;
+        --foreground: #f8fafc;
+        --muted-foreground: #94a3b8;
+        --primary: #3b82f6;
+        --primary-foreground: #ffffff;
+        --secondary: #334155;
+        --secondary-foreground: #f1f5f9;
+        --border: #334155;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --chart-1: #60a5fa;
+        --chart-2: #34d399;
+        --chart-3: #fbbf24;
+        --chart-4: #f87171;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .math-expr {
+      font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+      font-style: italic;
+    }
+    .tab-active {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    .level-dot {
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    .level-dot:hover {
+      transform: scale(1.15);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      border-radius: 0.75rem;
+    }
+    input[type="range"] {
+      accent-color: var(--primary);
+    }
+    .fade-in {
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased">
+  <div class="min-h-screen flex flex-col">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-30 bg-[var(--card)] border-b border-[var(--border)] px-4 sm:px-6 py-3">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-bold text-lg select-none">
+            B
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-bold tracking-tight leading-none">Bonniemath</h1>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)] font-medium">QLD Y11 Methods</span>
+            </div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Year 10 &rarr; Year 11 Holiday Prep</p>
+          </div>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[var(--muted-foreground)] hidden md:inline">View:</span>
+          <div class="inline-flex rounded-lg border border-[var(--border)] bg-[var(--background)] p-0.5 text-xs" role="group" aria-label="Learning view mode">
+            <button id="mode-visual" onclick="setViewMode('visual')" class="px-2.5 py-1.5 rounded-md font-medium transition-colors">
+              Visual First
+            </button>
+            <button id="mode-balanced" onclick="setViewMode('balanced')" class="px-2.5 py-1.5 rounded-md font-medium transition-colors">
+              Balanced
+            </button>
+            <button id="mode-text" onclick="setViewMode('text')" class="px-2.5 py-1.5 rounded-md font-medium transition-colors">
+              Text First
+            </button>
+          </div>
+        </div>
+
+        <!-- Holiday Progress -->
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-xs font-semibold" id="progress-label">0 / 7 Topics Mastered</div>
+            <div class="w-28 sm:w-36 h-2 rounded-full bg-[var(--secondary)] overflow-hidden mt-1">
+              <div id="progress-bar" class="h-full bg-[var(--primary)] transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="max-w-7xl w-full mx-auto flex-1 flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
+      <!-- Sidebar: QCAA Topic Map -->
+      <aside class="lg:w-72 shrink-0 space-y-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Holiday Roadmap</h2>
+            <button onclick="resetProgress()" class="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] underline">Reset</button>
+          </div>
+          <nav id="topic-nav" class="space-y-1.5" aria-label="Math topics"></nav>
+        </div>
+
+        <!-- Study Tip Card -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 space-y-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">How to use Bonniemath</div>
+          <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+            Start any topic at <strong>Level 1 (Plain English)</strong>. Play with the interactive graph, then tap <strong>Go Deeper &rarr;</strong> until you're comfortable with Year 11 Methods formulas. If something feels tricky, tap <strong>&larr; Simplify</strong> anytime!
+          </p>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 min-w-0 space-y-5">
+        <!-- Topic Header + Depth Controller -->
+        <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-[var(--muted-foreground)] mb-1">
+                <span id="topic-unit" class="font-medium"></span>
+                <span>&bull;</span>
+                <span id="topic-time"></span>
+              </div>
+              <h2 id="topic-title" class="text-xl sm:text-2xl font-bold tracking-tight"></h2>
+              <p id="topic-subtitle" class="text-sm text-[var(--muted-foreground)] mt-1"></p>
+            </div>
+            <div id="topic-badge" class="text-xs font-semibold px-3 py-1 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)]"></div>
+          </div>
+
+          <!-- Simplify / Go Deeper Bar -->
+          <div class="pt-3 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
+            <button id="btn-simplify" onclick="changeDepth(-1)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--secondary)] text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              &larr; Simplify Concept
+            </button>
+
+            <div class="flex items-center gap-1.5" id="depth-pills"></div>
+
+            <button id="btn-deeper" onclick="changeDepth(1)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 text-xs font-semibold transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
+              Go Deeper &rarr;
+            </button>
+          </div>
+        </section>
+
+        <!-- Dynamic Content Grid (adapts to Visual First / Balanced / Text First) -->
+        <div id="content-grid" class="grid gap-5">
+          <!-- Interactive Visual Explorer Panel -->
+          <section id="visual-panel" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 id="visual-title" class="text-sm font-bold">Interactive Explorer</h3>
+                <p id="visual-hint" class="text-xs text-[var(--muted-foreground)]"></p>
+              </div>
+              <button onclick="resetExplorer()" class="text-xs px-2.5 py-1 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition-colors">
+                Reset
+              </button>
+            </div>
+
+            <div class="relative rounded-xl border border-[var(--border)] bg-[var(--background)] overflow-hidden">
+              <canvas id="math-canvas" width="760" height="360"></canvas>
+            </div>
+
+            <!-- Live Readout Bar -->
+            <div id="visual-readout" class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"></div>
+
+            <!-- Interactive Controls -->
+            <div id="visual-controls" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[var(--border)]"></div>
+          </section>
+
+          <!-- Explanation & Depth Panel -->
+          <section id="text-panel" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 fade-in">
+            <div class="flex items-center justify-between gap-2">
+              <span id="depth-tag" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)]"></span>
+              <span class="text-xs text-[var(--muted-foreground)]" id="depth-counter"></span>
+            </div>
+
+            <div id="explanation-body" class="space-y-3 text-sm leading-relaxed"></div>
+
+            <!-- Key Formula Box -->
+            <div id="formula-box" class="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5 space-y-1">
+              <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Key Idea / Formula</div>
+              <div id="formula-content" class="text-base font-semibold math-expr"></div>
+            </div>
+
+            <!-- Worked Example Accordion -->
+            <div class="border border-[var(--border)] rounded-xl overflow-hidden">
+              <button onclick="toggleExample()" class="w-full flex items-center justify-between px-4 py-3 text-left text-xs font-semibold bg-[var(--background)] hover:bg-[var(--secondary)] transition-colors">
+                <span>Worked Example (Step-by-Step)</span>
+                <span id="example-chevron">Show &darr;</span>
+              </button>
+              <div id="example-body" class="hidden px-4 py-3.5 text-sm space-y-2 border-t border-[var(--border)] bg-[var(--card)]"></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Quick Check Practice -->
+        <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold">Quick Check</h3>
+              <p class="text-xs text-[var(--muted-foreground)]">Answer correctly to mark this topic as ready for Year 11!</p>
+            </div>
+            <button onclick="nextQuestion()" class="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] transition-colors">
+              Another Question
+            </button>
+          </div>
+
+          <div id="quiz-question" class="text-sm font-medium"></div>
+          <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          <div id="quiz-feedback" class="hidden text-xs p-3 rounded-xl border"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CURRICULUM DATA — QLD (QCAA) Year 10 -> Year 11 Mathematical Methods
+    // =========================================================================
+    const DEPTH_LABELS = [
+      { level: 1, short: "L1: Plain English", badge: "Level 1 — Plain English & Intuition" },
+      { level: 2, short: "L2: Y10 Bridge", badge: "Level 2 — Connecting from Year 10" },
+      { level: 3, short: "L3: Y11 Methods", badge: "Level 3 — QLD Year 11 Methods Core" },
+      { level: 4, short: "L4: Deep Mastery", badge: "Level 4 — Why It Works & Exam Traps" }
+    ];
+
+    const TOPICS = [
+      {
+        id: "quadratics",
+        title: "Quadratics & Completing the Square",
+        unit: "Y10 Bridge → Unit 1",
+        time: "15 min",
+        subtitle: "Turning equations into shapes, finding turning points, and mastering the discriminant.",
+        visualTitle: "Parabola & Turning Point Explorer",
+        visualHint: "Slide a, h, and k to see how vertex form y = a(x - h)² + k moves and stretches the parabola.",
+        levels: [
+          {
+            html: `<p>A <strong>quadratic</strong> is just a U-shaped curve (called a parabola) — like the path of a basketball shot or water from a fountain.</p>
+                   <p>Instead of guessing where the bottom (or top) of the U-shape is, we can write the rule in <strong>Turning Point Form</strong>. It literally hands you the exact coordinates of the turning point on a silver platter!</p>`,
+            formula: "y = a(x - h)² + k   →   Turning Point is at (h, k)",
+            example: `<p><strong>Question:</strong> Where is the turning point of <span class="math-expr">y = (x - 3)² + 2</span>?</p>
+                      <p><strong>Step 1:</strong> Look inside the brackets: <span class="math-expr">(x - 3)</span> means shift right by <strong>3</strong>.</p>
+                      <p><strong>Step 2:</strong> Look at the number on the end: <span class="math-expr">+ 2</span> means shift up by <strong>2</strong>.</p>
+                      <p><strong>Answer:</strong> Turning point is <strong>(3, 2)</strong>.</p>`
+          },
+          {
+            html: `<p>In Year 10 you mostly saw quadratics in <strong>expanded form</strong>: <span class="math-expr">y = ax² + bx + c</span>. That's great for finding the y-intercept (<span class="math-expr">c</span>), and factorising gives you the x-intercepts.</p>
+                   <p>To get to Year 11 Methods, you need <strong>Completing the Square</strong> — a neat algebraic trick that turns <span class="math-expr">x² + bx + c</span> into <span class="math-expr">(x - h)² + k</span> by adding and subtracting <span class="math-expr">(b/2)²</span>.</p>`,
+            formula: "x² + bx + c = (x + b/2)² - (b/2)² + c",
+            example: `<p><strong>Question:</strong> Complete the square for <span class="math-expr">y = x² - 6x + 5</span>.</p>
+                      <p><strong>Step 1:</strong> Halve the middle number (-6 &divide; 2 = -3) and square it ((-3)² = 9).</p>
+                      <p><strong>Step 2:</strong> Add and subtract 9: <span class="math-expr">y = (x² - 6x + 9) - 9 + 5</span>.</p>
+                      <p><strong>Step 3:</strong> Factor the bracket: <span class="math-expr">y = (x - 3)² - 4</span>. Turning point: <strong>(3, -4)</strong>.</p>`
+          },
+          {
+            html: `<p>In QCAA Year 11 Methods, you use the <strong>discriminant</strong> <span class="math-expr">&Delta; = b² - 4ac</span> to immediately know how many x-intercepts (real roots) a quadratic has without even solving it:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>&Delta; &gt; 0:</strong> Two distinct real x-intercepts (crosses the x-axis twice).</li>
+                     <li><strong>&Delta; = 0:</strong> One repeated root (just kisses the x-axis at its turning point).</li>
+                     <li><strong>&Delta; &lt; 0:</strong> No real roots (floats completely above or below the x-axis).</li>
+                   </ul>`,
+            formula: "x = (-b ± √(b² - 4ac)) / 2a   where   Δ = b² - 4ac",
+            example: `<p><strong>Question:</strong> How many x-intercepts does <span class="math-expr">y = 2x² - 4x + 5</span> have?</p>
+                      <p><strong>Step 1:</strong> Identify <span class="math-expr">a = 2, b = -4, c = 5</span>.</p>
+                      <p><strong>Step 2:</strong> Calculate <span class="math-expr">&Delta; = (-4)² - 4(2)(5) = 16 - 40 = -24</span>.</p>
+                      <p><strong>Answer:</strong> Since <span class="math-expr">&Delta; &lt; 0</span>, there are <strong>no real x-intercepts</strong>.</p>`
+          },
+          {
+            html: `<p><strong>Why does the Quadratic Formula even exist?</strong> It's literally just <em>completing the square</em> done once on the general equation <span class="math-expr">ax² + bx + c = 0</span>!</p>
+                   <p><strong>QCAA Exam Trap:</strong> Watch the sign of <span class="math-expr">h</span>! In <span class="math-expr">y = a(x + 4)² - 1</span>, the turning point is <strong>(-4, -1)</strong>, NOT (4, -1). Also, if <span class="math-expr">a &ne; 1</span> when completing the square, always factor <span class="math-expr">a</span> out of the first two terms first.</p>`,
+            formula: "Vertex x-coordinate = -b / (2a)   |   Axis of symmetry: x = h",
+            example: `<p><strong>Question:</strong> Find the values of <span class="math-expr">m</span> for which <span class="math-expr">x² + mx + 9 = 0</span> has exactly one solution.</p>
+                      <p><strong>Step 1:</strong> Exactly one solution means <span class="math-expr">&Delta; = 0</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">m² - 4(1)(9) = 0 &rArr; m² = 36</span>.</p>
+                      <p><strong>Answer:</strong> <span class="math-expr">m = 6</span> or <span class="math-expr">m = -6</span> (don't forget the negative root!).</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "What is the turning point of y = -2(x + 4)² + 7?",
+            options: ["(-4, 7)", "(4, 7)", "(-4, -7)", "(2, 7)"],
+            answer: 0,
+            explain: "In y = a(x - h)² + k, (x + 4) means h = -4, and + 7 means k = 7. So the turning point is (-4, 7)."
+          },
+          {
+            q: "If the discriminant Δ = b² - 4ac equals 0, what does the parabola do?",
+            options: ["Crosses the x-axis twice", "Touches the x-axis at exactly one point", "Never touches the x-axis", "Becomes a straight line"],
+            answer: 1,
+            explain: "When Δ = 0, the ±√0 part vanishes, leaving one repeated real root — the vertex sits right on the x-axis."
+          }
+        ]
+      },
+      {
+        id: "functions",
+        title: "Functions, Graphs & Transformations",
+        unit: "Unit 1 • Topic 2",
+        time: "20 min",
+        subtitle: "Function notation f(x), domain & range, the vertical line test, and transforming parent graphs.",
+        visualTitle: "Parent Function & Transformation Lab",
+        visualHint: "Choose a parent graph, adjust a, h, k, and toggle the Vertical Line Test scanner.",
+        levels: [
+          {
+            html: `<p>Think of a <strong>function</strong> like a vending machine: you press one button (input <span class="math-expr">x</span>), and you get <em>exactly one</em> snack (output <span class="math-expr">f(x)</span>). If pressing B4 randomly gave you chips AND a drink, it's broken — not a function!</p>
+                   <p>On a graph, we check this with the <strong>Vertical Line Test</strong>: if a vertical line ever hits the graph more than once, it's NOT a function.</p>`,
+            formula: "f(x) = output when you plug in x",
+            example: `<p><strong>Question:</strong> If <span class="math-expr">f(x) = 3x - 2</span>, find <span class="math-expr">f(5)</span>.</p>
+                      <p><strong>Step 1:</strong> Replace every <span class="math-expr">x</span> with <span class="math-expr">5</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">f(5) = 3(5) - 2 = 15 - 2 = 13</span>.</p>`
+          },
+          {
+            html: `<p>Every function has two key sets of numbers:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>Domain:</strong> All the allowed <span class="math-expr">x</span>-values (left to right).</li>
+                     <li><strong>Range:</strong> All the possible <span class="math-expr">y</span>-values (bottom to top).</li>
+                   </ul>
+                   <p>For example, <span class="math-expr">f(x) = &radic;x</span> only accepts <span class="math-expr">x &ge; 0</span> (you can't take the square root of a negative real number), so its domain is <span class="math-expr">[0, &infin;)</span>.</p>`,
+            formula: "Domain = valid x inputs   |   Range = resulting y outputs",
+            example: `<p><strong>Question:</strong> State the domain and range of <span class="math-expr">f(x) = x² + 3</span>.</p>
+                      <p><strong>Domain:</strong> Any real number works, so <span class="math-expr">x &isin; &Ropf;</span> (or <span class="math-expr">(-&infin;, &infin;)</span>).</p>
+                      <p><strong>Range:</strong> Since <span class="math-expr">x² &ge; 0</span>, the smallest output is 3. Range: <span class="math-expr">[3, &infin;)</span>.</p>`
+          },
+          {
+            html: `<p>In Year 11 Methods, you transform <strong>parent functions</strong> (<span class="math-expr">x², x³, 1/x, &radic;x</span>) using the universal template <span class="math-expr">y = a &middot; f(x - h) + k</span>:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>a:</strong> Vertical dilation (stretch/squash). If <span class="math-expr">a &lt; 0</span>, it flips upside down (reflects in x-axis).</li>
+                     <li><strong>h:</strong> Horizontal translation (right if <span class="math-expr">h &gt; 0</span>, left if <span class="math-expr">h &lt; 0</span>).</li>
+                     <li><strong>k:</strong> Vertical translation (up if <span class="math-expr">k &gt; 0</span>, down if <span class="math-expr">k &lt; 0</span>).</li>
+                   </ul>`,
+            formula: "y = a · f(x - h) + k",
+            example: `<p><strong>Question:</strong> Describe the transformations from <span class="math-expr">y = 1/x</span> to <span class="math-expr">y = 1/(x - 2) + 3</span>.</p>
+                      <p><strong>Answer:</strong> Translated <strong>2 units right</strong> (vertical asymptote moves to <span class="math-expr">x = 2</span>) and <strong>3 units up</strong> (horizontal asymptote moves to <span class="math-expr">y = 3</span>).</p>`
+          },
+          {
+            html: `<p><strong>Why does (x - h) move RIGHT when h is positive?</strong> Because to get the same output as the original function at <span class="math-expr">x = 0</span>, your new <span class="math-expr">x</span> has to be <span class="math-expr">h</span> larger to cancel out the <span class="math-expr">- h</span>!</p>
+                   <p><strong>QCAA Exam Tip:</strong> Always check asymptotes for hyperbolas <span class="math-expr">y = a/(x - h) + k</span>. The domain is <span class="math-expr">&Ropf; \\ {h}</span> and the range is <span class="math-expr">&Ropf; \\ {k}</span>.</p>`,
+            formula: "Hyperbola y = a/(x - h) + k  →  Asymptotes: x = h and y = k",
+            example: `<p><strong>Question:</strong> Find the domain of <span class="math-expr">f(x) = &radic;(4 - 2x)</span>.</p>
+                      <p><strong>Step 1:</strong> Inside a square root must be <span class="math-expr">&ge; 0</span>: <span class="math-expr">4 - 2x &ge; 0</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">4 &ge; 2x &rArr; x &le; 2</span>. Domain is <span class="math-expr">(-&infin;, 2]</span>.</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "What is the domain of f(x) = 1 / (x - 5)?",
+            options: ["All real numbers", "All real numbers except x = 5", "x > 5", "All real numbers except x = -5"],
+            answer: 1,
+            explain: "You can never divide by zero. Setting x - 5 = 0 gives x = 5, so x = 5 is excluded from the domain."
+          },
+          {
+            q: "How does y = f(x + 3) - 1 move the graph of y = f(x)?",
+            options: ["3 right, 1 down", "3 left, 1 down", "3 right, 1 up", "3 left, 1 up"],
+            answer: 1,
+            explain: "Inside the bracket (x + 3) = (x - (-3)) shifts 3 units left; -1 outside shifts 1 unit down."
+          }
+        ]
+      },
+      {
+        id: "sequences",
+        title: "Sequences & Series",
+        unit: "Unit 1 • Topics 1 & 5",
+        time: "15 min",
+        subtitle: "Arithmetic vs Geometric patterns, n-th term rules, sums, and infinite series.",
+        visualTitle: "Sequence & Cumulative Sum Explorer",
+        visualHint: "Switch between Arithmetic (adding d) and Geometric (multiplying by r). Try r between -1 and 1 to see infinite convergence!",
+        levels: [
+          {
+            html: `<p>A <strong>sequence</strong> is just an ordered list of numbers that follows a pattern. There are two superstars in Year 11 Methods:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>Arithmetic:</strong> You <em>add</em> the same step every time (e.g., 3, 7, 11, 15... adding 4).</li>
+                     <li><strong>Geometric:</strong> You <em>multiply</em> by the same factor every time (e.g., 2, 6, 18, 54... multiplying by 3).</li>
+                   </ul>
+                   <p>A <strong>series</strong> is what you get when you add all the terms in a sequence together!</p>`,
+            formula: "Arithmetic = + d each step   |   Geometric = × r each step",
+            example: `<p><strong>Question:</strong> Is 5, 10, 20, 40 arithmetic or geometric?</p>
+                      <p><strong>Check:</strong> Differences are +5, +10, +20 (not equal). Ratios are 10/5 = 2, 20/10 = 2, 40/20 = 2 (all equal!).</p>
+                      <p><strong>Answer:</strong> <strong>Geometric</strong> with first term <span class="math-expr">a = 5</span> and common ratio <span class="math-expr">r = 2</span>.</p>`
+          },
+          {
+            html: `<p>To jump straight to the 50th term without listing 50 numbers, we use the <strong>n-th term rule</strong> (<span class="math-expr">t_n</span>). Notice why both formulas have <span class="math-expr">(n - 1)</span>: to reach term 5, you only take <strong>4</strong> steps from term 1!</p>`,
+            formula: "Arithmetic: tₙ = a + (n - 1)d   |   Geometric: tₙ = a · rⁿ⁻¹",
+            example: `<p><strong>Question:</strong> Find the 10th term of 4, 7, 10, 13, ...</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">a = 4, d = 3, n = 10</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">t₁₀ = 4 + (10 - 1)(3) = 4 + 27 = 31</span>.</p>`
+          },
+          {
+            html: `<p>In QCAA Unit 1 Topic 5, you calculate the <strong>sum of the first n terms</strong> (<span class="math-expr">S_n</span>). Even cooler: if a geometric sequence shrinks (<span class="math-expr">|r| &lt; 1</span>), adding <em>infinitely many</em> terms still gives a finite number!</p>`,
+            formula: "Sₙ (Arith) = (n/2)[2a + (n-1)d]   |   Sₙ (Geom) = a(rⁿ - 1)/(r - 1)   |   S∞ = a / (1 - r)",
+            example: `<p><strong>Question:</strong> Find the infinite sum of <span class="math-expr">8 + 4 + 2 + 1 + ...</span></p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">a = 8</span> and <span class="math-expr">r = 4/8 = 0.5</span>. Since <span class="math-expr">|0.5| &lt; 1</span>, it converges!</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">S∞ = 8 / (1 - 0.5) = 8 / 0.5 = 16</span>.</p>`
+          },
+          {
+            html: `<p><strong>Why does S∞ = a/(1 - r) work?</strong> Look at the finite geometric sum <span class="math-expr">Sₙ = a(1 - rⁿ)/(1 - r)</span>. When <span class="math-expr">-1 &lt; r &lt; 1</span>, as <span class="math-expr">n &rarr; &infin;</span>, <span class="math-expr">rⁿ</span> shrinks all the way to <strong>0</strong>, leaving <span class="math-expr">a(1 - 0)/(1 - r)</span>!</p>
+                   <p><strong>Real-world QCAA link:</strong> Compound interest is a geometric sequence where <span class="math-expr">r = 1 + i</span>, and depreciation uses <span class="math-expr">r = 1 - i</span>.</p>`,
+            formula: "Limiting Sum exists if and only if  -1 < r < 1",
+            example: `<p><strong>Question:</strong> A ball bounces to 80% of its previous height from 10 m. What is the sum of all downward drops?</p>
+                      <p><strong>Step 1:</strong> Downward drops are 10, 8, 6.4, ... so <span class="math-expr">a = 10, r = 0.8</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">S∞ = 10 / (1 - 0.8) = 50 m</span>.</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "For a geometric series to have a finite infinite sum S∞, what must be true about r?",
+            options: ["r > 1", "-1 < r < 1", "r = 1", "r must be an integer"],
+            answer: 1,
+            explain: "Only when |r| < 1 (between -1 and 1) do the terms shrink toward zero so the total sum converges."
+          },
+          {
+            q: "What is the 6th term of the arithmetic sequence 2, 7, 12, 17, ...?",
+            options: ["27", "32", "22", "30"],
+            answer: 0,
+            explain: "a = 2, d = 5. t₆ = 2 + (6 - 1)(5) = 2 + 25 = 27."
+          }
+        ]
+      },
+      {
+        id: "explogs",
+        title: "Exponentials & Logarithms",
+        unit: "Unit 1 T4 & Unit 2 T1–2",
+        time: "20 min",
+        subtitle: "Index laws, exponential growth, and logarithms as the exact inverse of powers.",
+        visualTitle: "Exponential & Logarithm Mirror Explorer",
+        visualHint: "Notice how y = aˣ and y = logₐ(x) are exact mirror images across the diagonal line y = x!",
+        levels: [
+          {
+            html: `<p>An <strong>exponential</strong> grows by multiplying over and over (like bacteria doubling every hour: <span class="math-expr">2, 4, 8, 16, 32...</span>).</p>
+                   <p>A <strong>logarithm</strong> sounds scary, but it's just asking one simple question: <em>"What power do I need?"</em> For example, <span class="math-expr">log₂(8)</span> literally asks: <em>"2 to the power of WHAT equals 8?"</em> Answer: <strong>3</strong>!</p>`,
+            formula: "aˣ = y   ⟺   logₐ(y) = x",
+            example: `<p><strong>Question:</strong> Evaluate <span class="math-expr">log₁₀(1000)</span>.</p>
+                      <p><strong>Think:</strong> "10 to the power of WHAT equals 1000?"</p>
+                      <p><strong>Answer:</strong> Since <span class="math-expr">10³ = 1000</span>, <span class="math-expr">log₁₀(1000) = 3</span>.</p>`
+          },
+          {
+            html: `<p>Before logs, make sure your Year 10 <strong>Index Laws</strong> are rock solid — especially negative and fractional powers:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><span class="math-expr">a⁰ = 1</span> (anything non-zero to the power 0 is 1)</li>
+                     <li><span class="math-expr">a⁻ⁿ = 1 / aⁿ</span> (negative power means flip to the bottom)</li>
+                     <li><span class="math-expr">a^(1/n) = ⁿ&radic;a</span> (fractional power means root)</li>
+                   </ul>`,
+            formula: "aᵐ · aⁿ = aᵐ⁺ⁿ   |   (aᵐ)ⁿ = aᵐⁿ   |   a⁻ⁿ = 1/aⁿ",
+            example: `<p><strong>Question:</strong> Simplify <span class="math-expr">8^(2/3)</span>.</p>
+                      <p><strong>Step 1:</strong> The bottom of the fraction (3) is the cube root: <span class="math-expr">³&radic;8 = 2</span>.</p>
+                      <p><strong>Step 2:</strong> The top of the fraction (2) is the power: <span class="math-expr">2² = 4</span>.</p>`
+          },
+          {
+            html: `<p>Because logarithms ARE powers, <strong>Log Laws</strong> are just Index Laws in disguise:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>Multiply inside &rarr; Add logs:</strong> <span class="math-expr">logₐ(MN) = logₐ(M) + logₐ(N)</span></li>
+                     <li><strong>Divide inside &rarr; Subtract logs:</strong> <span class="math-expr">logₐ(M/N) = logₐ(M) - logₐ(N)</span></li>
+                     <li><strong>Power inside &rarr; Bring to front:</strong> <span class="math-expr">logₐ(Mᵏ) = k &middot; logₐ(M)</span></li>
+                   </ul>`,
+            formula: "logₐ(MN) = logₐM + logₐN   |   logₐ(Mᵏ) = k·logₐM",
+            example: `<p><strong>Question:</strong> Solve <span class="math-expr">2ˣ = 10</span> to 2 decimal places.</p>
+                      <p><strong>Step 1:</strong> Take <span class="math-expr">log₁₀</span> of both sides: <span class="math-expr">log₁₀(2ˣ) = log₁₀(10)</span>.</p>
+                      <p><strong>Step 2:</strong> Bring <span class="math-expr">x</span> to the front: <span class="math-expr">x &middot; log₁₀(2) = 1</span>.</p>
+                      <p><strong>Step 3:</strong> <span class="math-expr">x = 1 / log₁₀(2) &approx; 3.32</span>.</p>`
+          },
+          {
+            html: `<p><strong>Inverse Symmetry:</strong> <span class="math-expr">y = aˣ</span> has horizontal asymptote <span class="math-expr">y = 0</span> and passes through <span class="math-expr">(0, 1)</span>. Swap <span class="math-expr">x</span> and <span class="math-expr">y</span> to get its inverse <span class="math-expr">y = logₐ(x)</span>: vertical asymptote <span class="math-expr">x = 0</span>, passes through <span class="math-expr">(1, 0)</span>, and domain <span class="math-expr">x &gt; 0</span>!</p>
+                   <p><strong>QCAA Exam Trap:</strong> You can NEVER take the log of zero or a negative number. Always check your solutions to log equations back in the original equation!</p>`,
+            formula: "Domain of logₐ(x) is x > 0   |   logₐ(1) = 0   |   logₐ(a) = 1",
+            example: `<p><strong>Question:</strong> Simplify <span class="math-expr">log₂(12) - log₂(3)</span>.</p>
+                      <p><strong>Step 1:</strong> Subtracting logs = dividing inside: <span class="math-expr">log₂(12/3) = log₂(4)</span>.</p>
+                      <p><strong>Step 2:</strong> Since <span class="math-expr">2² = 4</span>, the answer is <strong>2</strong>.</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "What is the value of log₃(81)?",
+            options: ["3", "4", "9", "27"],
+            answer: 1,
+            explain: "log₃(81) asks '3 to what power gives 81?'. Since 3⁴ = 81, the answer is 4."
+          },
+          {
+            q: "Which point does y = logₐ(x) ALWAYS pass through (for any base a > 0, a ≠ 1)?",
+            options: ["(0, 1)", "(1, 0)", "(0, 0)", "(1, 1)"],
+            answer: 1,
+            explain: "Because a⁰ = 1 for every valid base, logₐ(1) = 0, so the curve always crosses the x-axis at (1, 0)."
+          }
+        ]
+      },
+      {
+        id: "trig",
+        title: "Trigonometry & The Unit Circle",
+        unit: "Unit 2 • Topic 3",
+        time: "20 min",
+        subtitle: "Radians vs degrees, the unit circle, exact values, and sine/cosine waves.",
+        visualTitle: "Live Unit Circle ↔ Sine & Cosine Wave",
+        visualHint: "Drag the angle θ to walk around the unit circle and watch the sine (height) and cosine (width) waves trace out!",
+        levels: [
+          {
+            html: `<p>Imagine standing on a Ferris wheel of radius <strong>1 metre</strong> (the <strong>Unit Circle</strong>). As the wheel turns by an angle <span class="math-expr">&theta;</span>:</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>cos(&theta;)</strong> is simply your <strong>horizontal</strong> position (x-coordinate).</li>
+                     <li><strong>sin(&theta;)</strong> is simply your <strong>vertical</strong> height (y-coordinate).</li>
+                   </ul>
+                   <p>When you unroll your height over time, you get the smooth <strong>sine wave</strong>!</p>`,
+            formula: "On the Unit Circle:  x = cos(θ),   y = sin(θ)",
+            example: `<p><strong>Question:</strong> At the very top of the Ferris wheel (<span class="math-expr">90&deg;</span>), what are <span class="math-expr">cos(90&deg;)</span> and <span class="math-expr">sin(90&deg;)</span>?</p>
+                      <p><strong>Answer:</strong> You are at <span class="math-expr">(0, 1)</span>, so <span class="math-expr">cos(90&deg;) = 0</span> and <span class="math-expr">sin(90&deg;) = 1</span>!</p>`
+          },
+          {
+            html: `<p>In Year 11 Methods, we switch from degrees to <strong>radians</strong>. Why? Because 360 is an arbitrary historical number, whereas radians measure the actual arc length around the unit circle!</p>
+                   <p>A full circle has circumference <span class="math-expr">2&pi;</span>, so <span class="math-expr">360&deg; = 2&pi;</span> radians, and half a circle is <span class="math-expr">180&deg; = &pi;</span> radians.</p>`,
+            formula: "Radians = Degrees × (π / 180)   |   180° = π rad",
+            example: `<p><strong>Question:</strong> Convert <span class="math-expr">60&deg;</span> to radians.</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">60 &times; (&pi;/180) = 60&pi;/180 = &pi;/3</span> radians.</p>`
+          },
+          {
+            html: `<p>You'll use the <strong>CAST</strong> rule (All, Sin, Tan, Cos) to know which trig functions are positive in each quadrant, plus the <strong>Exact Value Triangles</strong> for <span class="math-expr">&pi;/6 (30&deg;)</span>, <span class="math-expr">&pi;/4 (45&deg;)</span>, and <span class="math-expr">&pi;/3 (60&deg;)</span>:</p>
+                   <p class="text-xs font-mono bg-[var(--background)] p-2.5 rounded-lg border border-[var(--border)]">sin(π/6) = 1/2  |  sin(π/4) = √2/2  |  sin(π/3) = √3/2</p>`,
+            formula: "y = A·sin(B(x - C)) + D  →  Amplitude = |A|,  Period = 2π / B",
+            example: `<p><strong>Question:</strong> Find the amplitude and period of <span class="math-expr">y = 3 sin(2x)</span>.</p>
+                      <p><strong>Amplitude:</strong> <span class="math-expr">|A| = 3</span> (wave goes from -3 to +3).</p>
+                      <p><strong>Period:</strong> <span class="math-expr">2&pi; / B = 2&pi; / 2 = &pi;</span> (completes a full wave twice as fast).</p>`
+          },
+          {
+            html: `<p><strong>The Pythagorean Identity:</strong> Because every point <span class="math-expr">(cos &theta;, sin &theta;)</span> lies on the circle <span class="math-expr">x² + y² = 1</span>, we automatically get <span class="math-expr">cos²(&theta;) + sin²(&theta;) = 1</span> for EVERY angle <span class="math-expr">&theta;</span>!</p>
+                   <p><strong>QCAA Exam Tip:</strong> Always check whether your graphics calculator is in <strong>RAD</strong> or <strong>DEG</strong> mode before touching a trig question!</p>`,
+            formula: "sin²(θ) + cos²(θ) = 1   |   tan(θ) = sin(θ) / cos(θ)",
+            example: `<p><strong>Question:</strong> Solve <span class="math-expr">sin(&theta;) = 1/2</span> for <span class="math-expr">0 &le; &theta; &le; 2&pi;</span>.</p>
+                      <p><strong>Step 1:</strong> Base angle is <span class="math-expr">&pi;/6</span>. Sine is positive in Quadrants 1 and 2.</p>
+                      <p><strong>Answer:</strong> <span class="math-expr">&theta; = &pi;/6</span> and <span class="math-expr">&theta; = &pi; - &pi;/6 = 5&pi;/6</span>.</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "What is 90° in radians?",
+            options: ["π", "π/2", "π/4", "2π"],
+            answer: 1,
+            explain: "Since 180° = π radians, half of that (90°) is π/2 radians."
+          },
+          {
+            q: "What is the period of y = sin(4x)?",
+            options: ["4π", "2π", "π/2", "π/4"],
+            answer: 2,
+            explain: "Period = 2π / B = 2π / 4 = π/2."
+          }
+        ]
+      },
+      {
+        id: "calculus",
+        title: "Intro to Calculus (Rates of Change)",
+        unit: "Unit 2 • Topic 4",
+        time: "20 min",
+        subtitle: "Average vs instantaneous rate of change, secant-to-tangent, first principles, and the power rule.",
+        visualTitle: "Secant-to-Tangent Calculus Zoomer",
+        visualHint: "Drag h closer and closer to 0! Watch the secant line snap into the exact tangent line at x.",
+        levels: [
+          {
+            html: `<p>If you drive 100 km in 1 hour, your <strong>average speed</strong> is 100 km/h. That's easy! But what does your car's speedometer show at <em>one exact millisecond</em>? That's your <strong>instantaneous rate of change</strong>.</p>
+                   <p><strong>Differential Calculus</strong> is simply the superpower that lets you find the exact steepness (gradient) of a curved graph at a single point!</p>`,
+            formula: "Derivative f'(x) = exact gradient (steepness) of the curve at x",
+            example: `<p><strong>Intuition:</strong> On a rollercoaster, when you're climbing up, <span class="math-expr">f'(x) &gt; 0</span>. At the very peak (before you drop), you're momentarily flat: <span class="math-expr">f'(x) = 0</span>!</p>`
+          },
+          {
+            html: `<p>In Year 10, you found the gradient of a straight line using <span class="math-expr">m = (y₂ - y₁) / (x₂ - x₁)</span>.</p>
+                   <p>For a curve, we pick two points separated by a tiny horizontal gap <span class="math-expr">h</span>, draw the line between them (the <strong>secant</strong>), and then shrink <span class="math-expr">h</span> closer and closer to 0 until the two points merge into one (the <strong>tangent</strong>).</p>`,
+            formula: "Average Rate = [ f(x + h) - f(x) ] / h",
+            example: `<p><strong>Question:</strong> Find the average rate of change of <span class="math-expr">f(x) = x²</span> from <span class="math-expr">x = 1</span> to <span class="math-expr">x = 3</span>.</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">f(1) = 1</span> and <span class="math-expr">f(3) = 9</span>.</p>
+                      <p><strong>Step 2:</strong> <span class="math-expr">(9 - 1) / (3 - 1) = 8 / 2 = 4</span>.</p>`
+          },
+          {
+            html: `<p>Shrinking <span class="math-expr">h &rarr; 0</span> gives the official QCAA <strong>First Principles</strong> definition. Thankfully, once you prove the pattern, you get the lightning-fast <strong>Power Rule</strong>: bring the power down to the front, and subtract 1 from the power!</p>`,
+            formula: "If f(x) = axⁿ,   then   f'(x) = a·n·xⁿ⁻¹",
+            example: `<p><strong>Question:</strong> Differentiate <span class="math-expr">f(x) = 3x⁴ - 5x² + 7</span>.</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">3x⁴ &rarr; 12x³</span>, &nbsp; <span class="math-expr">-5x² &rarr; -10x</span>, &nbsp; constant <span class="math-expr">7 &rarr; 0</span>.</p>
+                      <p><strong>Answer:</strong> <span class="math-expr">f'(x) = 12x³ - 10x</span>.</p>`
+          },
+          {
+            html: `<p><strong>Stationary Points & Optimisation:</strong> Wherever <span class="math-expr">f'(x) = 0</span>, the tangent is horizontal — that's how you find local maxima, minima, and points of inflection without guessing!</p>
+                   <p><strong>First Principles Proof for x²:</strong> <span class="math-expr">lim(h&rarr;0) [(x+h)² - x²]/h = lim(h&rarr;0) [2xh + h²]/h = lim(h&rarr;0) (2x + h) = 2x</span>. Clean!</p>`,
+            formula: "f'(x) = lim(h→0) [ f(x + h) - f(x) ] / h",
+            example: `<p><strong>Question:</strong> Find the turning point of <span class="math-expr">f(x) = x² - 8x + 3</span> using calculus.</p>
+                      <p><strong>Step 1:</strong> Differentiate: <span class="math-expr">f'(x) = 2x - 8</span>.</p>
+                      <p><strong>Step 2:</strong> Set <span class="math-expr">f'(x) = 0 &rArr; 2x - 8 = 0 &rArr; x = 4</span>.</p>
+                      <p><strong>Step 3:</strong> <span class="math-expr">f(4) = 16 - 32 + 3 = -13</span>. Turning point: <strong>(4, -13)</strong>.</p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "Using the power rule, what is the derivative of f(x) = 5x³?",
+            options: ["5x²", "15x²", "15x³", "3x²"],
+            answer: 1,
+            explain: "Bring the 3 down to multiply the 5 (giving 15), and reduce the power from 3 to 2: 15x²."
+          },
+          {
+            q: "At a local maximum or minimum turning point of a smooth curve, what is f'(x)?",
+            options: ["Positive", "Negative", "Zero", "Undefined"],
+            answer: 2,
+            explain: "At a turning point, the tangent line is completely flat (horizontal), so its gradient f'(x) = 0."
+          }
+        ]
+      },
+      {
+        id: "probability",
+        title: "Counting & Probability",
+        unit: "Unit 1 • Topic 3",
+        time: "15 min",
+        subtitle: "Venn diagrams, conditional probability P(A|B), independence, and combinations nCr.",
+        visualTitle: "Interactive Venn & Conditional Probability Lab",
+        visualHint: "Adjust P(A), P(B), and their overlap P(A ∩ B) to see P(A ∪ B), P(A|B), and independence live.",
+        levels: [
+          {
+            html: `<p>Probability is just a number from <strong>0</strong> (impossible) to <strong>1</strong> (certain).</p>
+                   <p>A <strong>Venn Diagram</strong> shows two overlapping circles: Event A and Event B. The overlap in the middle is <strong>A AND B</strong> (<span class="math-expr">A &cap; B</span>). Everything inside either circle is <strong>A OR B</strong> (<span class="math-expr">A &cup; B</span>).</p>`,
+            formula: "P(A ∪ B) = P(A) + P(B) - P(A ∩ B)",
+            example: `<p><strong>Why subtract the overlap?</strong> If you add circle A and circle B, you counted the middle overlap <em>twice</em>! Subtracting <span class="math-expr">P(A &cap; B)</span> fixes the double-counting.</p>`
+          },
+          {
+            html: `<p><strong>Conditional Probability</strong> <span class="math-expr">P(A | B)</span> means: <em>"The probability of A happening, GIVEN that we already know B happened."</em></p>
+                   <p>Because we know B happened, B becomes our new whole universe (the denominator)!</p>`,
+            formula: "P(A | B) = P(A ∩ B) / P(B)",
+            example: `<p><strong>Question:</strong> If <span class="math-expr">P(A &cap; B) = 0.15</span> and <span class="math-expr">P(B) = 0.50</span>, find <span class="math-expr">P(A | B)</span>.</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">P(A | B) = 0.15 / 0.50 = 0.30</span> (30%).</p>`
+          },
+          {
+            html: `<p>Two events are <strong>Independent</strong> if knowing B happened doesn't change the chance of A at all — i.e., <span class="math-expr">P(A | B) = P(A)</span>, which is equivalent to <span class="math-expr">P(A &cap; B) = P(A) &middot; P(B)</span>.</p>
+                   <p>Unit 1 Topic 3 also introduces <strong>Combinations</strong> <span class="math-expr">ⁿCᵣ</span>: the number of ways to choose <span class="math-expr">r</span> items from <span class="math-expr">n</span> when order doesn't matter (like picking a 3-person committee from 10 students).</p>`,
+            formula: "Independent ⟺ P(A ∩ B) = P(A)·P(B)   |   ⁿCᵣ = n! / [r!(n - r)!]",
+            example: `<p><strong>Question:</strong> How many ways can you choose 2 captains from 5 players?</p>
+                      <p><strong>Step 1:</strong> <span class="math-expr">⁵C₂ = 5! / (2! &middot; 3!) = (5 &times; 4) / (2 &times; 1) = 10</span> ways.</p>`
+          },
+          {
+            html: `<p><strong>QCAA Exam Trap (Mutually Exclusive vs Independent):</strong> Students mix these up all the time!</p>
+                   <ul class="list-disc pl-5 space-y-1">
+                     <li><strong>Mutually Exclusive:</strong> Cannot happen together &rArr; <span class="math-expr">P(A &cap; B) = 0</span>.</li>
+                     <li><strong>Independent:</strong> Don't affect each other &rArr; <span class="math-expr">P(A &cap; B) = P(A)P(B)</span>.</li>
+                   </ul>
+                   <p>If two events have non-zero probabilities, they CANNOT be both mutually exclusive and independent!</p>`,
+            formula: "Binomial Expansion: (a + b)ⁿ = Σ ⁿCᵣ · aⁿ⁻ʳ · bʳ",
+            example: `<p><strong>Question:</strong> If <span class="math-expr">P(A) = 0.4, P(B) = 0.5</span>, and <span class="math-expr">P(A &cap; B) = 0.2</span>, are A and B independent?</p>
+                      <p><strong>Check:</strong> <span class="math-expr">P(A) &times; P(B) = 0.4 &times; 0.5 = 0.2 = P(A &cap; B)</span>. <strong>Yes, independent!</strong></p>`
+          }
+        ],
+        quiz: [
+          {
+            q: "If P(A) = 0.6, P(B) = 0.5, and P(A ∩ B) = 0.2, what is P(A ∪ B)?",
+            options: ["1.1", "0.9", "0.8", "0.7"],
+            answer: 1,
+            explain: "P(A ∪ B) = 0.6 + 0.5 - 0.2 = 0.9."
+          },
+          {
+            q: "Which equation proves that events A and B are independent?",
+            options: ["P(A ∩ B) = 0", "P(A ∩ B) = P(A) × P(B)", "P(A) + P(B) = 1", "P(A ∪ B) = P(A) + P(B)"],
+            answer: 1,
+            explain: "Independence means the probability of both happening equals the product P(A) × P(B)."
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // APP STATE (persisted in localStorage)
+    // =========================================================================
+    const STORAGE_KEY = "bonniemath_state_v1";
+    let state = {
+      topicIndex: 0,
+      depth: 1,           // 1..4
+      viewMode: "balanced", // 'visual' | 'balanced' | 'text'
+      mastered: {},       // { topicId: true }
+      quizIdx: {},        // { topicId: 0 }
+      exampleOpen: false
+    };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (saved) state = { ...state, ...saved };
+    } catch (_) {}
+
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+    }
+
+    // Per-topic interactive explorer parameters
+    const explorerDefaults = {
+      quadratics: { a: 1, h: 1, k: -2 },
+      functions:  { fn: "quad", a: 1, h: 0, k: 0, vlt: false },
+      sequences:  { type: "geom", a: 4, d: 2, r: 0.6, n: 8 },
+      explogs:    { base: 2, px: 1.5 },
+      trig:       { deg: 45, amp: 1, freq: 1 },
+      calculus:   { x0: 1, h: 1.5, curve: "x2" },
+      probability:{ pA: 0.5, pB: 0.4, pAB: 0.2 }
+    };
+    let explorer = JSON.parse(JSON.stringify(explorerDefaults));
+
+    // =========================================================================
+    // THEME-AWARE CANVAS COLORS
+    // =========================================================================
+    function getThemeColors() {
+      const cs = getComputedStyle(document.documentElement);
+      const get = (v, fb) => cs.getPropertyValue(v).trim() || fb;
+      return {
+        bg: get("--background", "#ffffff"),
+        fg: get("--foreground", "#111827"),
+        muted: get("--muted-foreground", "#6b7280"),
+        border: get("--border", "#e5e7eb"),
+        primary: get("--primary", "#2563eb"),
+        c1: get("--chart-1", "#2563eb"),
+        c2: get("--chart-2", "#10b981"),
+        c3: get("--chart-3", "#f59e0b"),
+        c4: get("--chart-4", "#ef4444")
+      };
+    }
+
+    // =========================================================================
+    // RENDERING UI
+    // =========================================================================
+    function renderAll() {
+      renderNav();
+      renderViewMode();
+      renderTopic();
+      renderProgress();
+    }
+
+    function renderProgress() {
+      const count = Object.keys(state.mastered).filter(k => state.mastered[k]).length;
+      const total = TOPICS.length;
+      document.getElementById("progress-label").textContent = `${count} / ${total} Topics Mastered`;
+      document.getElementById("progress-bar").style.width = `${Math.round((count / total) * 100)}%`;
+    }
+
+    function renderNav() {
+      const nav = document.getElementById("topic-nav");
+      nav.innerHTML = TOPICS.map((t, i) => {
+        const active = i === state.topicIndex;
+        const done = !!state.mastered[t.id];
+        return `
+          <button onclick="selectTopic(${i})"
+            class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-colors flex items-center justify-between gap-2 ${
+              active
+                ? "bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold"
+                : "hover:bg-[var(--secondary)] text-[var(--foreground)]"
+            }">
+            <div class="min-w-0">
+              <div class="truncate">${i + 1}. ${t.title}</div>
+              <div class="text-[11px] opacity-75 truncate">${t.unit}</div>
+            </div>
+            <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
+              done
+                ? "bg-[var(--success)] text-white"
+                : active ? "bg-white/20" : "bg-[var(--secondary)] text-[var(--muted-foreground)]"
+            }">${done ? "✓" : i + 1}</span>
+          </button>`;
+      }).join("");
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      saveState();
+      renderViewMode();
+      drawCanvas();
+    }
+
+    function renderViewMode() {
+      ["visual", "balanced", "text"].forEach(m => {
+        const btn = document.getElementById("mode-" + m);
+        btn.className = "px-2.5 py-1.5 rounded-md font-medium transition-colors " +
+          (state.viewMode === m ? "tab-active" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]");
+      });
+
+      const grid = document.getElementById("content-grid");
+      const vPanel = document.getElementById("visual-panel");
+      const tPanel = document.getElementById("text-panel");
+
+      if (state.viewMode === "visual") {
+        grid.className = "grid grid-cols-1 gap-5";
+        vPanel.style.order = "1";
+        tPanel.style.order = "2";
+      } else if (state.viewMode === "text") {
+        grid.className = "grid grid-cols-1 gap-5";
+        tPanel.style.order = "1";
+        vPanel.style.order = "2";
+      } else {
+        grid.className = "grid grid-cols-1 xl:grid-cols-12 gap-5 items-start";
+        vPanel.className = "xl:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4";
+        tPanel.className = "xl:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 fade-in";
+        vPanel.style.order = "1";
+        tPanel.style.order = "2";
+        return;
+      }
+      vPanel.className = "bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4";
+      tPanel.className = "bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 fade-in";
+    }
+
+    function selectTopic(idx) {
+      state.topicIndex = idx;
+      state.exampleOpen = false;
+      saveState();
+      renderAll();
+    }
+
+    function changeDepth(delta) {
+      state.depth = Math.max(1, Math.min(4, state.depth + delta));
+      saveState();
+      renderTopic();
+    }
+
+    function setDepth(lvl) {
+      state.depth = lvl;
+      saveState();
+      renderTopic();
+    }
+
+    function toggleExample() {
+      state.exampleOpen = !state.exampleOpen;
+      const body = document.getElementById("example-body");
+      const chev = document.getElementById("example-chevron");
+      body.classList.toggle("hidden", !state.exampleOpen);
+      chev.innerHTML = state.exampleOpen ? "Hide &uarr;" : "Show &darr;";
+    }
+
+    function renderTopic() {
+      const topic = TOPICS[state.topicIndex];
+      const lvlObj = topic.levels[state.depth - 1];
+      const dMeta = DEPTH_LABELS[state.depth - 1];
+
+      document.getElementById("topic-unit").textContent = topic.unit;
+      document.getElementById("topic-time").textContent = topic.time;
+      document.getElementById("topic-title").textContent = topic.title;
+      document.getElementById("topic-subtitle").textContent = topic.subtitle;
+      document.getElementById("topic-badge").textContent = state.mastered[topic.id] ? "✓ Ready for Y11" : "In Progress";
+
+      // Depth buttons & pills
+      document.getElementById("btn-simplify").disabled = state.depth <= 1;
+      document.getElementById("btn-deeper").disabled = state.depth >= 4;
+      document.getElementById("depth-pills").innerHTML = DEPTH_LABELS.map(d => `
+        <button onclick="setDepth(${d.level})"
+          class="level-dot px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+            state.depth === d.level
+              ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent"
+              : "bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]"
+          }">
+          ${d.short}
+        </button>
+      `).join("");
+
+      // Explanation
+      document.getElementById("depth-tag").textContent = dMeta.badge;
+      document.getElementById("depth-counter").textContent = `Depth ${state.depth} of 4`;
+      document.getElementById("explanation-body").innerHTML = lvlObj.html;
+      document.getElementById("formula-content").textContent = lvlObj.formula;
+      document.getElementById("example-body").innerHTML = lvlObj.example;
+      document.getElementById("example-body").classList.toggle("hidden", !state.exampleOpen);
+      document.getElementById("example-chevron").innerHTML = state.exampleOpen ? "Hide &uarr;" : "Show &darr;";
+
+      // Visual Explorer
+      document.getElementById("visual-title").textContent = topic.visualTitle;
+      document.getElementById("visual-hint").textContent = topic.visualHint;
+      renderControls();
+      drawCanvas();
+
+      // Quiz
+      renderQuiz();
+    }
+
+    // =========================================================================
+    // QUIZ ENGINE
+    // =========================================================================
+    function renderQuiz() {
+      const topic = TOPICS[state.topicIndex];
+      const qIdx = (state.quizIdx[topic.id] || 0) % topic.quiz.length;
+      const item = topic.quiz[qIdx];
+
+      document.getElementById("quiz-question").textContent = item.q;
+      const fb = document.getElementById("quiz-feedback");
+      fb.classList.add("hidden");
+
+      document.getElementById("quiz-options").innerHTML = item.options.map((opt, idx) => `
+        <button onclick="answerQuiz(${idx})"
+          class="text-left px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--secondary)] text-xs font-medium transition-colors">
+          <span class="font-bold mr-2 opacity-60">${String.fromCharCode(65 + idx)}.</span>${opt}
+        </button>
+      `).join("");
+    }
+
+    function answerQuiz(choice) {
+      const topic = TOPICS[state.topicIndex];
+      const qIdx = (state.quizIdx[topic.id] || 0) % topic.quiz.length;
+      const item = topic.quiz[qIdx];
+      const fb = document.getElementById("quiz-feedback");
+      fb.classList.remove("hidden");
+
+      if (choice === item.answer) {
+        state.mastered[topic.id] = true;
+        saveState();
+        renderNav();
+        renderProgress();
+        document.getElementById("topic-badge").textContent = "✓ Ready for Y11";
+        fb.className = "text-xs p-3 rounded-xl border border-[var(--success)] bg-[var(--background)] text-[var(--foreground)]";
+        fb.innerHTML = `<strong style="color: var(--success)">Spot on!</strong> ${item.explain}`;
+      } else {
+        fb.className = "text-xs p-3 rounded-xl border border-[var(--warning)] bg-[var(--background)] text-[var(--foreground)]";
+        fb.innerHTML = `<strong style="color: var(--warning)">Not quite — try again!</strong> Hint: ${item.explain}`;
+      }
+    }
+
+    function nextQuestion() {
+      const topic = TOPICS[state.topicIndex];
+      state.quizIdx[topic.id] = ((state.quizIdx[topic.id] || 0) + 1) % topic.quiz.length;
+      renderQuiz();
+    }
+
+    function resetProgress() {
+      state.mastered = {};
+      saveState();
+      renderAll();
+    }
+
+    function resetExplorer() {
+      const id = TOPICS[state.topicIndex].id;
+      explorer[id] = JSON.parse(JSON.stringify(explorerDefaults[id]));
+      renderControls();
+      drawCanvas();
+    }
+
+    // =========================================================================
+    // INTERACTIVE CONTROLS PER TOPIC
+    // =========================================================================
+    function sliderHTML(label, val, min, max, step, onInput) {
+      return `
+        <label class="flex flex-col gap-1 text-xs">
+          <div class="flex justify-between">
+            <span class="text-[var(--muted-foreground)] font-medium">${label}</span>
+            <span class="font-mono font-semibold">${val}</span>
+          </div>
+          <input type="range" min="${min}" max="${max}" step="${step}" value="${val}" oninput="${onInput}" class="w-full" />
+        </label>`;
+    }
+
+    function updateExp(topicId, key, val) {
+      explorer[topicId][key] = val;
+      if (topicId === "probability") {
+        const p = explorer.probability;
+        const maxAB = Math.min(p.pA, p.pB);
+        if (p.pAB > maxAB) p.pAB = Number(maxAB.toFixed(2));
+      }
+      renderControls();
+      drawCanvas();
+    }
+
+    function renderControls() {
+      const id = TOPICS[state.topicIndex].id;
+      const el = document.getElementById("visual-controls");
+      const p = explorer[id];
+
+      if (id === "quadratics") {
+        el.innerHTML =
+          sliderHTML("Stretch / Flip (a)", p.a, -3, 3, 0.5, `updateExp('quadratics','a',parseFloat(this.value))`) +
+          sliderHTML("Horizontal Shift (h)", p.h, -4, 4, 0.5, `updateExp('quadratics','h',parseFloat(this.value))`) +
+          sliderHTML("Vertical Shift (k)", p.k, -4, 4, 0.5, `updateExp('quadratics','k',parseFloat(this.value))`);
+      } else if (id === "functions") {
+        el.innerHTML = `
+          <div class="flex flex-wrap items-center gap-1.5 sm:col-span-2">
+            ${["quad:x²", "cubic:x³", "recip:1/x", "sqrt:√x"].map(item => {
+              const [k, lbl] = item.split(":");
+              return `<button onclick="updateExp('functions','fn','${k}')" class="px-2.5 py-1 rounded-lg text-xs font-medium border ${p.fn === k ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)] bg-[var(--background)]"}">${lbl}</button>`;
+            }).join("")}
+            <button onclick="updateExp('functions','vlt',${!p.vlt})" class="ml-auto px-2.5 py-1 rounded-lg text-xs font-medium border ${p.vlt ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)] bg-[var(--background)]"}">
+              ${p.vlt ? "✓ Vertical Line Test ON" : "Vertical Line Test"}
+            </button>
+          </div>` +
+          sliderHTML("Vertical Stretch (a)", p.a, -2, 3, 0.5, `updateExp('functions','a',parseFloat(this.value))`) +
+          sliderHTML("Shift Right/Left (h)", p.h, -3, 3, 0.5, `updateExp('functions','h',parseFloat(this.value))`) +
+          sliderHTML("Shift Up/Down (k)", p.k, -3, 3, 0.5, `updateExp('functions','k',parseFloat(this.value))`);
+      } else if (id === "sequences") {
+        el.innerHTML = `
+          <div class="flex items-center gap-2 sm:col-span-2">
+            <button onclick="updateExp('sequences','type','arith')" class="px-3 py-1 rounded-lg text-xs font-medium border ${p.type === 'arith' ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)]"}">Arithmetic (+ d)</button>
+            <button onclick="updateExp('sequences','type','geom')" class="px-3 py-1 rounded-lg text-xs font-medium border ${p.type === 'geom' ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)]"}">Geometric (× r)</button>
+          </div>` +
+          sliderHTML("First term (a)", p.a, 1, 8, 1, `updateExp('sequences','a',parseFloat(this.value))`) +
+          (p.type === "arith"
+            ? sliderHTML("Common difference (d)", p.d, -3, 5, 0.5, `updateExp('sequences','d',parseFloat(this.value))`)
+            : sliderHTML("Common ratio (r)", p.r, -0.9, 1.5, 0.1, `updateExp('sequences','r',parseFloat(this.value))`)) +
+          sliderHTML("Number of terms (n)", p.n, 4, 12, 1, `updateExp('sequences','n',parseInt(this.value))`);
+      } else if (id === "explogs") {
+        el.innerHTML =
+          sliderHTML("Base (a)", p.base, 1.5, 4, 0.5, `updateExp('explogs','base',parseFloat(this.value))`) +
+          sliderHTML("Trace point (x)", p.px, -1.5, 2.5, 0.25, `updateExp('explogs','px',parseFloat(this.value))`);
+      } else if (id === "trig") {
+        el.innerHTML =
+          sliderHTML("Angle θ (degrees)", p.deg, 0, 360, 5, `updateExp('trig','deg',parseInt(this.value))`) +
+          sliderHTML("Amplitude (A)", p.amp, 0.5, 2, 0.5, `updateExp('trig','amp',parseFloat(this.value))`) +
+          sliderHTML("Frequency (B)", p.freq, 1, 3, 1, `updateExp('trig','freq',parseInt(this.value))`);
+      } else if (id === "calculus") {
+        el.innerHTML = `
+          <div class="flex items-center gap-2 sm:col-span-2">
+            <button onclick="updateExp('calculus','curve','x2')" class="px-3 py-1 rounded-lg text-xs font-medium border ${p.curve === 'x2' ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)]"}">f(x) = x²</button>
+            <button onclick="updateExp('calculus','curve','x3')" class="px-3 py-1 rounded-lg text-xs font-medium border ${p.curve === 'x3' ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent" : "border-[var(--border)]"}">f(x) = 0.3x³ - x</button>
+          </div>` +
+          sliderHTML("Point x", p.x0, -2, 2, 0.25, `updateExp('calculus','x0',parseFloat(this.value))`) +
+          sliderHTML("Step gap h (shrink toward 0!)", p.h, 0.05, 2.5, 0.05, `updateExp('calculus','h',parseFloat(this.value))`);
+      } else if (id === "probability") {
+        el.innerHTML =
+          sliderHTML("P(A)", p.pA, 0.1, 0.8, 0.05, `updateExp('probability','pA',parseFloat(this.value))`) +
+          sliderHTML("P(B)", p.pB, 0.1, 0.8, 0.05, `updateExp('probability','pB',parseFloat(this.value))`) +
+          sliderHTML("Overlap P(A ∩ B)", p.pAB, 0, Math.min(p.pA, p.pB).toFixed(2), 0.05, `updateExp('probability','pAB',parseFloat(this.value))`);
+      }
+    }
+
+    function setReadout(items) {
+      document.getElementById("visual-readout").innerHTML = items.map(([k, v]) => `
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-2">
+          <div class="text-[11px] text-[var(--muted-foreground)]">${k}</div>
+          <div class="font-mono font-semibold text-xs truncate">${v}</div>
+        </div>
+      `).join("");
+    }
+
+    // =========================================================================
+    // CANVAS DRAWING ENGINE
+    // =========================================================================
+    function drawAxes(ctx, w, h, scale, ox, oy, col) {
+      ctx.strokeStyle = col.border;
+      ctx.lineWidth = 1;
+      for (let x = ox % scale; x < w; x += scale) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = oy % scale; y < h; y += scale) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      ctx.strokeStyle = col.muted;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    }
+
+    function drawCanvas() {
+      const canvas = document.getElementById("math-canvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      const col = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = col.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const id = TOPICS[state.topicIndex].id;
+      const p = explorer[id];
+
+      if (id === "quadratics") {
+        const scale = 36, ox = w / 2, oy = h / 2;
+        drawAxes(ctx, w, h, scale, ox, oy, col);
+        const f = x => p.a * (x - p.h) ** 2 + p.k;
+        ctx.strokeStyle = col.c1;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = 0; px <= w; px += 2) {
+          const x = (px - ox) / scale;
+          const py = oy - f(x) * scale;
+          if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Vertex dot
+        const vx = ox + p.h * scale, vy = oy - p.k * scale;
+        ctx.fillStyle = col.c4;
+        ctx.beginPath(); ctx.arc(vx, vy, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = col.fg;
+        ctx.font = "12px monospace";
+        ctx.fillText(`Vertex (${p.h}, ${p.k})`, vx + 10, vy - 8);
+
+        // Discriminant of ax^2 - 2ahx + (ah^2 + k)
+        const b = -2 * p.a * p.h, c = p.a * p.h * p.h + p.k;
+        const disc = b * b - 4 * p.a * c;
+        const roots = p.a === 0 ? "Linear" : disc > 0.001 ? "2 real roots" : Math.abs(disc) <= 0.001 ? "1 repeated root" : "No real roots";
+        setReadout([
+          ["Equation", `y = ${p.a}(x ${p.h >= 0 ? "-" : "+"} ${Math.abs(p.h)})² ${p.k >= 0 ? "+" : "-"} ${Math.abs(p.k)}`],
+          ["Turning Point", `(${p.h}, ${p.k})`],
+          ["Discriminant Δ", disc.toFixed(1)],
+          ["x-intercepts", roots]
+        ]);
+      }
+
+      else if (id === "functions") {
+        const scale = 36, ox = w / 2, oy = h / 2;
+        drawAxes(ctx, w, h, scale, ox, oy, col);
+        const evalFn = x => {
+          const u = x - p.h;
+          if (p.fn === "quad") return p.a * u * u + p.k;
+          if (p.fn === "cubic") return p.a * 0.25 * u * u * u + p.k;
+          if (p.fn === "recip") return Math.abs(u) < 0.08 ? NaN : p.a / u + p.k;
+          if (p.fn === "sqrt") return u < 0 ? NaN : p.a * Math.sqrt(u) + p.k;
+        };
+
+        ctx.strokeStyle = col.c1;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        let pen = false;
+        for (let px = 0; px <= w; px += 2) {
+          const x = (px - ox) / scale;
+          const y = evalFn(x);
+          if (isNaN(y) || Math.abs(y) > 20) { pen = false; continue; }
+          const py = oy - y * scale;
+          if (!pen) { ctx.moveTo(px, py); pen = true; } else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        if (p.vlt) {
+          const vx = ox + (p.h + 1.2) * scale;
+          ctx.strokeStyle = col.c2;
+          ctx.setLineDash([6, 4]);
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(vx, 0); ctx.lineTo(vx, h); ctx.stroke();
+          ctx.setLineDash([]);
+          const vy = evalFn(p.h + 1.2);
+          if (!isNaN(vy)) {
+            ctx.fillStyle = col.c2;
+            ctx.beginPath(); ctx.arc(vx, oy - vy * scale, 6, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        const dom = p.fn === "sqrt" ? `[${p.h}, ∞)` : p.fn === "recip" ? `ℝ \\ {${p.h}}` : "(-∞, ∞)";
+        setReadout([
+          ["Parent", p.fn === "quad" ? "x²" : p.fn === "cubic" ? "x³" : p.fn === "recip" ? "1/x" : "√x"],
+          ["Domain", dom],
+          ["Shift (h, k)", `(${p.h}, ${p.k})`],
+          ["Vertical Line Test", "Passes (1 output per x)"]
+        ]);
+      }
+
+      else if (id === "sequences") {
+        const terms = [];
+        let sum = 0;
+        for (let i = 0; i < p.n; i++) {
+          const t = p.type === "arith" ? p.a + i * p.d : p.a * Math.pow(p.r, i);
+          sum += t;
+          terms.push(t);
+        }
+        const maxVal = Math.max(10, ...terms.map(Math.abs));
+        const pad = 45, barW = (w - pad * 2) / p.n - 8;
+        const zeroY = h - 55;
+
+        ctx.strokeStyle = col.muted;
+        ctx.beginPath(); ctx.moveTo(pad, zeroY); ctx.lineTo(w - pad, zeroY); ctx.stroke();
+
+        terms.forEach((t, i) => {
+          const x = pad + i * ((w - pad * 2) / p.n) + 4;
+          const bh = (t / maxVal) * (h - 110);
+          ctx.fillStyle = t >= 0 ? col.c1 : col.c4;
+          ctx.fillRect(x, t >= 0 ? zeroY - bh : zeroY, barW, Math.abs(bh));
+          ctx.fillStyle = col.fg;
+          ctx.font = "11px monospace";
+          ctx.fillText(`t${i + 1}`, x + barW / 4, zeroY + 16);
+          ctx.fillText(t.toFixed(1), x + 2, (t >= 0 ? zeroY - bh - 6 : zeroY + Math.abs(bh) + 12));
+        });
+
+        const inf = p.type === "geom" && Math.abs(p.r) < 1 ? (p.a / (1 - p.r)).toFixed(2) : "Diverges";
+        setReadout([
+          ["Type", p.type === "arith" ? "Arithmetic" : "Geometric"],
+          [`Term t${p.n}`, terms[terms.length - 1].toFixed(2)],
+          [`Sum S${p.n}`, sum.toFixed(2)],
+          ["Infinite Sum S∞", inf]
+        ]);
+      }
+
+      else if (id === "explogs") {
+        const scale = 38, ox = w / 2 - 40, oy = h / 2 + 30;
+        drawAxes(ctx, w, h, scale, ox, oy, col);
+
+        // Mirror line y = x
+        ctx.strokeStyle = col.muted;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(ox - 200, oy + 200); ctx.lineTo(ox + 260, oy - 260); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // y = a^x
+        ctx.strokeStyle = col.c1; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = 0; px <= w; px += 2) {
+          const x = (px - ox) / scale;
+          const y = Math.pow(p.base, x);
+          if (y > 12) continue;
+          const py = oy - y * scale;
+          if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // y = log_a(x)
+        ctx.strokeStyle = col.c2; ctx.lineWidth = 3;
+        ctx.beginPath();
+        let started = false;
+        for (let px = ox + 2; px <= w; px += 2) {
+          const x = (px - ox) / scale;
+          const y = Math.log(x) / Math.log(p.base);
+          const py = oy - y * scale;
+          if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Mirror points
+        const ey = Math.pow(p.base, p.px);
+        const p1x = ox + p.px * scale, p1y = oy - ey * scale;
+        const p2x = ox + ey * scale, p2y = oy - p.px * scale;
+        ctx.fillStyle = col.c1; ctx.beginPath(); ctx.arc(p1x, p1y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = col.c2; ctx.beginPath(); ctx.arc(p2x, p2y, 5, 0, Math.PI * 2); ctx.fill();
+
+        setReadout([
+          ["Exponential", `y = ${p.base}ˣ`],
+          ["Point on aˣ", `(${p.px}, ${ey.toFixed(2)})`],
+          ["Logarithm", `y = log_${p.base}(x)`],
+          ["Mirrored Point", `(${ey.toFixed(2)}, ${p.px})`]
+        ]);
+      }
+
+      else if (id === "trig") {
+        const rad = (p.deg * Math.PI) / 180;
+        const cx = 155, cy = h / 2, r = 95;
+
+        // Unit Circle
+        ctx.strokeStyle = col.border; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx - r - 20, cy); ctx.lineTo(cx + r + 20, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy - r - 20); ctx.lineTo(cx, cy + r + 20); ctx.stroke();
+        ctx.strokeStyle = col.muted; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+        const ux = cx + Math.cos(rad) * r;
+        const uy = cy - Math.sin(rad) * r;
+
+        // Radius + Triangle
+        ctx.strokeStyle = col.c1; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ux, uy); ctx.stroke();
+        ctx.strokeStyle = col.c2; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(ux, cy); ctx.lineTo(ux, uy); ctx.stroke();
+        ctx.fillStyle = col.c4;
+        ctx.beginPath(); ctx.arc(ux, uy, 6, 0, Math.PI * 2); ctx.fill();
+
+        // Sine wave on right
+        const wx0 = 310, ww = w - 340;
+        ctx.strokeStyle = col.muted; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(wx0, cy); ctx.lineTo(wx0 + ww, cy); ctx.stroke();
+
+        ctx.strokeStyle = col.c1; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let i = 0; i <= ww; i += 2) {
+          const th = (i / ww) * Math.PI * 2;
+          const wy = cy - Math.sin(p.freq * th) * (r * 0.65 * p.amp);
+          if (i === 0) ctx.moveTo(wx0 + i, wy); else ctx.lineTo(wx0 + i, wy);
+        }
+        ctx.stroke();
+
+        // Current angle marker on wave
+        const mx = wx0 + (p.deg / 360) * ww;
+        const my = cy - Math.sin(p.freq * rad) * (r * 0.65 * p.amp);
+        ctx.fillStyle = col.c4;
+        ctx.beginPath(); ctx.arc(mx, my, 6, 0, Math.PI * 2); ctx.fill();
+
+        setReadout([
+          ["Angle θ", `${p.deg}° = ${(p.deg / 180).toFixed(2)}π rad`],
+          ["cos(θ) [x]", Math.cos(rad).toFixed(3)],
+          ["sin(θ) [y]", Math.sin(rad).toFixed(3)],
+          ["Wave Period", `2π / ${p.freq} = ${(2 / p.freq).toFixed(2)}π`]
+        ]);
+      }
+
+      else if (id === "calculus") {
+        const scale = 42, ox = w / 2, oy = h / 2 + 40;
+        drawAxes(ctx, w, h, scale, ox, oy, col);
+        const f = x => p.curve === "x2" ? x * x : 0.3 * x * x * x - x;
+        const df = x => p.curve === "x2" ? 2 * x : 0.9 * x * x - 1;
+
+        ctx.strokeStyle = col.c1; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = 0; px <= w; px += 2) {
+          const x = (px - ox) / scale;
+          const py = oy - f(x) * scale;
+          if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        const x1 = p.x0, y1 = f(x1);
+        const x2 = p.x0 + p.h, y2 = f(x2);
+        const secSlope = (y2 - y1) / p.h;
+        const tanSlope = df(x1);
+
+        // True tangent line
+        ctx.strokeStyle = col.c2; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(ox + (x1 - 3) * scale, oy - (y1 - 3 * tanSlope) * scale);
+        ctx.lineTo(ox + (x1 + 3) * scale, oy - (y1 + 3 * tanSlope) * scale);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Secant line
+        ctx.strokeStyle = col.c4; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(ox + (x1 - 2.5) * scale, oy - (y1 - 2.5 * secSlope) * scale);
+        ctx.lineTo(ox + (x1 + 2.5) * scale, oy - (y1 + 2.5 * secSlope) * scale);
+        ctx.stroke();
+
+        // Points
+        ctx.fillStyle = col.c2; ctx.beginPath(); ctx.arc(ox + x1 * scale, oy - y1 * scale, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = col.c4; ctx.beginPath(); ctx.arc(ox + x2 * scale, oy - y2 * scale, 5, 0, Math.PI * 2); ctx.fill();
+
+        setReadout([
+          ["Point x", x1.toFixed(2)],
+          ["Gap h", p.h.toFixed(2)],
+          ["Secant Gradient", secSlope.toFixed(3)],
+          ["True Derivative f'(x)", tanSlope.toFixed(3)]
+        ]);
+      }
+
+      else if (id === "probability") {
+        const cy = h / 2, r = 95;
+        const overlapRatio = p.pAB / Math.max(0.01, Math.min(p.pA, p.pB));
+        const dist = r * 2 - overlapRatio * r * 1.15;
+        const ax = w / 2 - dist / 2, bx = w / 2 + dist / 2;
+
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle = col.c1; ctx.beginPath(); ctx.arc(ax, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = col.c2; ctx.beginPath(); ctx.arc(bx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.strokeStyle = col.c1; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(ax, cy, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = col.c2; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(bx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.fillStyle = col.fg; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(`A only`, ax - 55, cy - 8);
+        ctx.fillText((p.pA - p.pAB).toFixed(2), ax - 48, cy + 12);
+        ctx.fillText(`B only`, bx + 15, cy - 8);
+        ctx.fillText((p.pB - p.pAB).toFixed(2), bx + 22, cy + 12);
+        ctx.fillText(`A ∩ B`, w / 2 - 18, cy - 8);
+        ctx.fillText(p.pAB.toFixed(2), w / 2 - 14, cy + 12);
+
+        const pUnion = Math.min(1, p.pA + p.pB - p.pAB);
+        const pAgivenB = p.pAB / p.pB;
+        const indep = Math.abs(p.pAB - p.pA * p.pB) < 0.015;
+        setReadout([
+          ["P(A ∪ B)", pUnion.toFixed(2)],
+          ["P(A | B)", pAgivenB.toFixed(2)],
+          ["P(A) × P(B)", (p.pA * p.pB).toFixed(2)],
+          ["Independent?", indep ? "Yes! P(A∩B) = P(A)P(B)" : "No"]
+        ]);
+      }
+    }
+
+    window.addEventListener("themechange", drawCanvas);
+    renderAll();
+  </script>
+</body>
+</html>
